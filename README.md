@@ -1,1 +1,1 @@
-# Validated-Algorithms-for-Bivariate-Polynomials
+# Validated Algorithms for Bivariate Polynomials
