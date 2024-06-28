@@ -13,68 +13,6 @@ include("utils.jl")
 #                 F = g*h + y^(2m)*x^2
 #
 ################################################################################
-epsilon = 1//10
-m = 6
-l = 16
-
-    QX, x = power_series_ring(AbstractAlgebra.QQ, l, "x"; model=:capped_absolute)
-    QXY, y = polynomial_ring(QX,"y")
-
-    epsilon = AbstractAlgebra.QQ(epsilon)
-    # Initialize the test
-    g = (y - epsilon)^m
-    h = (y + epsilon)^m
-    F = g*h + y^(2m)* x^2
-    (s,t) = cofactors(g, h, AbstractAlgebra.QQ, QX, QXY)
-
-    # Compute the exact solution
-    (ge, he, _, _) = fast_hensel_lifting(F,g,h,s,t,l)
-
-    # Get the floating point equivalent of the setup
-    RX, _ = power_series_ring(RDF, l, "x"; model=:capped_absolute)
-    RXY, _ = polynomial_ring(RX,"y")
-
-    Ff = to_other_poly(F, RDF, RX, RXY)
-    gf = to_other_poly(g, RDF, RX, RXY)
-    hf = to_other_poly(h, RDF, RX, RXY)
-    sf = to_other_poly(s, RDF, RX, RXY)
-    tf = to_other_poly(t, RDF, RX, RXY)
-
-
-    (G,H,S,T) = hensel_lifting(Ff, gf, hf, sf, tf, l)
-    
-
-    val_hensel_lifting(Ff, gf, hf, sf, tf, l, 0.0, 1.0)
-
-    # Compute the approximated maximum convergence radii
-    (_, _, _, rho) = val_find_rho_log(Ff, gf, hf, sf, tf, l)    
-
-    # Compute the validation with half of the radius
-    (gv, hv, rv) = val_hensel_lifting(Ff, gf, hf, sf, tf, l, rho, 1.0)
-
-    # Compute other algorithm output
-    (g2, h2, _, _) = fast_hensel_lifting(Ff, gf, hf, sf, tf, l)
-
-    # Compute error bounds with 128 bits precision to be rigorous
-    RRDF = typeof(ArbField(128)(1))
-    RRX, _ = power_series_ring(ArbField(128), l, "x"; model=:capped_absolute)
-    RRY, _ = polynomial_ring(RRX, "y")
-
-    Gef = to_other_poly(to_other_poly(ge, RDF, RX, RXY), RRDF, RRX, RRY)
-    Hef = to_other_poly(to_other_poly(he, RDF, RX, RXY), RRDF, RRX, RRY)
-    Gvf = to_other_poly(to_other_poly(gv, RDF, RX, RXY), RRDF, RRX, RRY)
-    Hvf = to_other_poly(to_other_poly(hv, RDF, RX, RXY), RRDF, RRX, RRY)
-    G2f = to_other_poly(to_other_poly(g2, RDF, RX, RXY), RRDF, RRX, RRY)
-    H2f = to_other_poly(to_other_poly(h2, RDF, RX, RXY), RRDF, RRX, RRY)
-
-
-    error_Gv = mag(biv_norm(Gef - Gvf, rho, 1.0))
-    error_Hv = mag(biv_norm(Hef - Hvf, rho, 1.0))
-    error_G2 = mag(biv_norm(Gef - G2f, rho, 1.0))
-    error_H2 = mag(biv_norm(Hef - H2f, rho, 1.0))
-
-    return (mag(rv), error_Gv, error_Hv, error_G2, error_H2, rho) 
-
 
 function test_close_roots()
     epsilon = 1.0
